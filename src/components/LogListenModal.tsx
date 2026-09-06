@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Clock, Headphones, Volume2, Home, Car, Radio, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Clock, Headphones, Volume2, Home, Radio, Check, Disc3 } from 'lucide-react';
 import { Album, ListenLog } from '../types';
 import { RatingStars } from './RatingStars';
 import { VinylArtwork } from './VinylArtwork';
@@ -15,18 +15,8 @@ const CONTEXT_OPTIONS = [
   { id: 'Headphones', label: 'Headphones', icon: Headphones },
   { id: 'Living Room Session', label: 'Living Room', icon: Home },
   { id: 'Late Night Ritual', label: 'Late Night', icon: Radio },
-  { id: 'Other', label: 'Other', icon: Disc3Icon },
+  { id: 'Other', label: 'Other', icon: Disc3 },
 ];
-
-function Disc3Icon(props: { className?: string }) {
-  return (
-    <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="4" />
-      <circle cx="12" cy="12" r="1" />
-    </svg>
-  );
-}
 
 export const LogListenModal: React.FC<LogListenModalProps> = ({
   album,
@@ -41,6 +31,17 @@ export const LogListenModal: React.FC<LogListenModalProps> = ({
     new Date().toISOString().substring(0, 16) // format for datetime-local
   );
   const [saving, setSaving] = useState(false);
+
+  // Handle Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +66,9 @@ export const LogListenModal: React.FC<LogListenModalProps> = ({
   return (
     <div
       id="log-listen-modal-backdrop"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
       className="fixed inset-0 z-60 overflow-y-auto bg-[#2D2D2A]/60 backdrop-blur-xs flex items-center justify-center p-4"
     >
       <div className="w-full max-w-md rounded-3xl bg-[#F4F1EA] border border-[#D9D4C7] text-[#2D2D2A] shadow-2xl p-5 sm:p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150">

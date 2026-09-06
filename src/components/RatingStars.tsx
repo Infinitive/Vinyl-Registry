@@ -25,7 +25,11 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
   const currentVal = Math.max(0, Math.min(5, value));
 
   return (
-    <div className="inline-flex items-center gap-1.5" role={isInteractive ? 'radiogroup' : undefined}>
+    <div
+      className="inline-flex items-center gap-1.5"
+      role={isInteractive ? 'radiogroup' : 'img'}
+      aria-label={isInteractive ? `Rating: ${currentVal > 0 ? `${currentVal} stars` : 'Unrated'}` : `Rated ${currentVal} out of 5 stars`}
+    >
       <div className="flex items-center gap-0.5">
         {[1, 2, 3, 4, 5].map((starIndex) => {
           const filled = currentVal >= starIndex;
@@ -33,7 +37,7 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
 
           if (!isInteractive) {
             return (
-              <div key={starIndex} className="relative select-none">
+              <div key={starIndex} className="relative select-none" aria-hidden="true">
                 <Star
                   className={`${starSizes[size]} ${
                     filled
@@ -56,6 +60,7 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
           return (
             <div key={starIndex} className="relative group cursor-pointer">
               <Star
+                aria-hidden="true"
                 className={`${starSizes[size]} transition-colors ${
                   filled
                     ? 'fill-[#C28B38] text-[#C28B38]'
@@ -65,7 +70,7 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
                 }`}
               />
               {half && (
-                <div className="absolute inset-0 overflow-hidden w-[50%] pointer-events-none">
+                <div className="absolute inset-0 overflow-hidden w-[50%] pointer-events-none" aria-hidden="true">
                   <Star className={`${starSizes[size]} fill-[#C28B38] text-[#C28B38]`} />
                 </div>
               )}
@@ -74,6 +79,7 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
                 type="button"
                 className="absolute inset-y-0 left-0 w-1/2 opacity-0 z-10 cursor-pointer"
                 title={`${starIndex - 0.5} stars`}
+                aria-label={`Rate ${starIndex - 0.5} stars`}
                 onClick={(e) => {
                   e.stopPropagation();
                   onChange?.(currentVal === starIndex - 0.5 ? 0 : starIndex - 0.5);
@@ -84,6 +90,7 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
                 type="button"
                 className="absolute inset-y-0 right-0 w-1/2 opacity-0 z-10 cursor-pointer"
                 title={`${starIndex} stars`}
+                aria-label={`Rate ${starIndex} stars`}
                 onClick={(e) => {
                   e.stopPropagation();
                   onChange?.(currentVal === starIndex ? starIndex - 0.5 : starIndex);

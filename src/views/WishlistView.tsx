@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Bookmark,
   Plus,
@@ -178,6 +178,25 @@ export const WishlistView: React.FC<WishlistViewProps> = ({
     setDiscogsId(item.discogsId || '');
     setFormError(null);
   };
+
+  // Handle Escape key for all Wishlist modals
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (itemToDelete) {
+          setItemToDelete(null);
+        } else if (acquiringItem) {
+          setAcquiringItem(null);
+        } else if (editingItem) {
+          setEditingItem(null);
+        } else if (showAddModal) {
+          setShowAddModal(false);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [itemToDelete, acquiringItem, editingItem, showAddModal]);
 
   // Submit Add
   const handleAddSubmit = async (e: React.FormEvent) => {
@@ -539,7 +558,12 @@ export const WishlistView: React.FC<WishlistViewProps> = ({
 
       {/* MODAL 1: Add to Wishlist */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D2D2A]/60 backdrop-blur-xs">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowAddModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D2D2A]/60 backdrop-blur-xs"
+        >
           <div className="w-full max-w-md rounded-3xl bg-white border border-[#D9D4C7] text-[#2D2D2A] shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-[#D9D4C7]">
               <div className="flex items-center gap-2">
@@ -657,7 +681,12 @@ export const WishlistView: React.FC<WishlistViewProps> = ({
 
       {/* MODAL 2: Edit Wishlist Item */}
       {editingItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D2D2A]/60 backdrop-blur-xs">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setEditingItem(null);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D2D2A]/60 backdrop-blur-xs"
+        >
           <div className="w-full max-w-md rounded-3xl bg-white border border-[#D9D4C7] text-[#2D2D2A] shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-[#D9D4C7]">
               <div className="flex items-center gap-2">
@@ -772,7 +801,12 @@ export const WishlistView: React.FC<WishlistViewProps> = ({
 
       {/* MODAL 3: Delete Confirmation */}
       {itemToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D2D2A]/60 backdrop-blur-xs">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setItemToDelete(null);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D2D2A]/60 backdrop-blur-xs"
+        >
           <div className="w-full max-w-sm rounded-3xl bg-white border border-[#D9D4C7] text-[#2D2D2A] shadow-2xl p-6 space-y-4">
             <div className="flex items-center gap-2 text-[#8A5A53]">
               <AlertTriangle className="w-5 h-5" />
@@ -804,7 +838,12 @@ export const WishlistView: React.FC<WishlistViewProps> = ({
 
       {/* MODAL 4: Full Acquisition Workflow Dialog */}
       {acquiringItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D2D2A]/60 backdrop-blur-xs">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setAcquiringItem(null);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D2D2A]/60 backdrop-blur-xs"
+        >
           <div className="w-full max-w-lg rounded-3xl bg-white border border-[#D9D4C7] text-[#2D2D2A] shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-2 border-b border-[#D9D4C7]">
               <div className="flex items-center gap-2 text-[#5D614E]">

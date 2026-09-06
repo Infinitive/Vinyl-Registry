@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Edit3,
@@ -42,6 +42,20 @@ export const RecordDetailModal: React.FC<RecordDetailModalProps> = ({
 }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showDeleteConfirm) {
+          setShowDeleteConfirm(false);
+        } else {
+          onClose();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showDeleteConfirm, onClose]);
+
   const albumLogs = listenLogs
     .filter((l) => l.recordId === album.id)
     .sort((a, b) => new Date(b.listenedAt).getTime() - new Date(a.listenedAt).getTime());
@@ -83,6 +97,9 @@ export const RecordDetailModal: React.FC<RecordDetailModalProps> = ({
   return (
     <div
       id="record-detail-backdrop"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
       className="fixed inset-0 z-50 overflow-y-auto bg-[#2D2D2A]/60 backdrop-blur-sm flex justify-center p-0 sm:p-4 md:p-6"
     >
       <div
@@ -411,7 +428,12 @@ export const RecordDetailModal: React.FC<RecordDetailModalProps> = ({
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-[#2D2D2A]/60 backdrop-blur-xs">
+          <div
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowDeleteConfirm(false);
+            }}
+            className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-[#2D2D2A]/60 backdrop-blur-xs"
+          >
             <div className="w-full max-w-md rounded-2xl bg-white border border-[#D9D4C7] p-5 text-[#2D2D2A] shadow-2xl space-y-4">
               <div className="flex items-center gap-3 text-[#8A5A53]">
                 <div className="w-10 h-10 rounded-xl bg-[#8A5A53]/15 flex items-center justify-center">

@@ -16,19 +16,19 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header
       id="app-header"
-      className="sticky top-0 z-30 w-full bg-zinc-950/80 backdrop-blur-md border-b border-zinc-850 pt-[env(safe-area-inset-top,0px)]"
+      className="sticky top-0 z-30 w-full bg-[#F4F1EA]/90 backdrop-blur-md border-b border-[#D9D4C7] pt-[env(safe-area-inset-top,0px)]"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
         {/* Left: Project title & collection count */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+          <div className="w-8 h-8 rounded-xl bg-[#5D614E]/10 border border-[#5D614E]/20 flex items-center justify-center text-[#5D614E]">
             <Disc3 className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-sm sm:text-base font-semibold text-zinc-100 tracking-tight leading-none">
+            <h1 className="font-serif text-base font-semibold text-[#2D2D2A] tracking-tight leading-none">
               Vinyl Registry
             </h1>
-            <p className="text-[11px] font-mono text-zinc-400 leading-none mt-1">
+            <p className="text-[11px] font-mono text-[#726E65] leading-none mt-1">
               {collectionCount} {collectionCount === 1 ? 'Record' : 'Records'}
             </p>
           </div>
@@ -43,7 +43,8 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             id="header-add-record-btn"
             onClick={onOpenAdd}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-600 hover:bg-amber-500 active:scale-95 text-white text-xs font-medium transition shadow-xs"
+            aria-label="Add Record to Registry"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#5D614E] hover:bg-[#4E5240] active:scale-95 text-[#FAF8F5] text-xs font-medium transition shadow-xs"
             title="Add New Record"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -54,7 +55,8 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             id="header-settings-btn"
             onClick={onOpenSettings}
-            className="p-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-850 rounded-full transition"
+            aria-label="Backup, Export & Settings"
+            className="p-2 text-[#726E65] hover:text-[#2D2D2A] hover:bg-[#EAE6DC] rounded-full transition"
             title="Backup, Export & Settings"
           >
             <Settings className="w-4 h-4" />

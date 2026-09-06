@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   X,
   Download,
@@ -41,6 +41,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [processing, setProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showResetConfirm) {
+          setShowResetConfirm(false);
+        } else {
+          onClose();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showResetConfirm, onClose]);
 
   const downloadFile = (content: string, filename: string, mimeType: string) => {
     const blob = new Blob([content], { type: mimeType });
@@ -130,6 +145,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   return (
     <div
       id="settings-modal-backdrop"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
       className="fixed inset-0 z-50 overflow-y-auto bg-[#2D2D2A]/60 backdrop-blur-sm flex items-center justify-center p-4"
     >
       <div className="w-full max-w-xl rounded-3xl bg-[#F4F1EA] border border-[#D9D4C7] text-[#2D2D2A] shadow-2xl p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
@@ -331,7 +349,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Reset Confirmation */}
         {showResetConfirm && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-[#2D2D2A]/60 backdrop-blur-xs">
+          <div
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowResetConfirm(false);
+            }}
+            className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-[#2D2D2A]/60 backdrop-blur-xs"
+          >
             <div className="w-full max-w-sm rounded-3xl bg-white border border-[#D9D4C7] text-[#2D2D2A] shadow-2xl p-6 space-y-4">
               <div className="flex items-center gap-2 text-[#8A5A53]">
                 <AlertTriangle className="w-5 h-5" />

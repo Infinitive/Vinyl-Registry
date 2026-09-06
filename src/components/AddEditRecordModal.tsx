@@ -58,6 +58,17 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
     );
   }, [artist, title, allAlbums, existingAlbum?.id]);
 
+  // Handle Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!artist.trim() || !title.trim()) {
@@ -125,6 +136,9 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
   return (
     <div
       id="add-edit-modal-backdrop"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
       className="fixed inset-0 z-50 overflow-y-auto bg-[#2D2D2A]/60 backdrop-blur-sm flex justify-center p-0 sm:p-4"
     >
       <div className="w-full max-w-xl min-h-screen sm:min-h-0 sm:my-auto rounded-none sm:rounded-3xl bg-[#F4F1EA] border-0 sm:border border-[#D9D4C7] text-[#2D2D2A] shadow-2xl flex flex-col overflow-hidden">
