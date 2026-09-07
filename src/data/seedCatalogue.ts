@@ -1,4 +1,5 @@
 import { Album } from '../types';
+import { findMatchingResearchRecord, enrichAlbumWithResearch } from './researchMaster';
 
 export const INITIAL_CATALOGUE_RECORDS: Omit<Album, 'id' | 'addedAt' | 'updatedAt'>[] = [
   { artist: 'Adele', title: '21', format: 'LP' },
@@ -95,7 +96,7 @@ export function generateSeedAlbums(): Album[] {
     // Offset each record by index minutes to have a deterministic chronological addedAt order
     const recordDate = new Date(baseDate.getTime() + index * 60000).toISOString();
     const id = `seed-record-${String(index + 1).padStart(3, '0')}`;
-    return {
+    const baseAlbum: Album = {
       id,
       artist: item.artist,
       title: item.title,
@@ -104,5 +105,11 @@ export function generateSeedAlbums(): Album[] {
       addedAt: recordDate,
       updatedAt: recordDate,
     };
+
+    const research = findMatchingResearchRecord(baseAlbum);
+    if (research) {
+      return enrichAlbumWithResearch(baseAlbum, research);
+    }
+    return baseAlbum;
   });
 }

@@ -30,7 +30,7 @@ export function runDiscovery(
   mode: DiscoveryMode,
   albums: Album[],
   logs: ListenLog[],
-  options?: { genre?: string; decade?: string }
+  options?: { genre?: string; style?: string; decade?: string }
 ): DiscoveryCandidate[] {
   if (albums.length === 0) return [];
 
@@ -100,27 +100,45 @@ export function runDiscovery(
 
     case 'genre': {
       let pool = albums;
+      const reasons: string[] = [];
+
       if (options?.genre && options.genre.trim()) {
         const target = options.genre.trim().toLowerCase();
-        pool = albums.filter((a) =>
+        pool = pool.filter((a) =>
           a.genres?.some((g) => g.toLowerCase() === target)
         );
+        reasons.push(`Genre: ${options.genre}`);
+      }
+
+      if (options?.style && options.style.trim()) {
+        const targetStyle = options.style.trim().toLowerCase();
+        pool = pool.filter((a) =>
+          a.styles?.some((s) => s.toLowerCase() === targetStyle)
+        );
+        reasons.push(`Style: ${options.style}`);
+      }
+
+      if (options?.genre || options?.style) {
         if (pool.length === 0) {
           return []; // Return empty for no-match empty state
         }
         const picked = pickRandomItems(pool, Math.min(3, pool.length));
-        return picked.map((album) => getCandidate(album, `Genre: ${options.genre}`));
+        return picked.map((album) => getCandidate(album, reasons.join(' · ')));
       }
 
-      // No specific genre filter selected: sample albums with genres
-      const withGenres = albums.filter((a) => a.genres && a.genres.length > 0);
-      const samplePool = withGenres.length > 0 ? withGenres : albums;
+      // No specific genre/style filter selected: sample albums with genres or styles
+      const withClassification = albums.filter(
+        (a) => (a.genres && a.genres.length > 0) || (a.styles && a.styles.length > 0)
+      );
+      const samplePool = withClassification.length > 0 ? withClassification : albums;
       const picked = pickRandomItems(samplePool, Math.min(3, samplePool.length));
       return picked.map((album) =>
         getCandidate(
           album,
           album.genres && album.genres.length > 0
             ? `Genre: ${album.genres[0]}`
+            : album.styles && album.styles.length > 0
+            ? `Style: ${album.styles[0]}`
             : 'From your collection'
         )
       );

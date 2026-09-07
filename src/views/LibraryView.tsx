@@ -34,6 +34,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   // Filter states
   const [statusFilter, setStatusFilter] = useState<'all' | 'unplayed' | 'played'>('all');
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
+  const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [selectedDecade, setSelectedDecade] = useState<string | null>(null);
   const [selectedFormat, setSelectedFormat] = useState<string | null>(null);
   const [specialEditionOnly, setSpecialEditionOnly] = useState(false);
@@ -55,6 +56,17 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
     for (const a of albums) {
       if (a.genres) {
         for (const g of a.genres) if (g.trim()) set.add(g.trim());
+      }
+    }
+    return Array.from(set).sort();
+  }, [albums]);
+
+  // Dynamic available styles from the collection
+  const availableStyles = useMemo(() => {
+    const set = new Set<string>();
+    for (const a of albums) {
+      if (a.styles) {
+        for (const s of a.styles) if (s.trim()) set.add(s.trim());
       }
     }
     return Array.from(set).sort();
@@ -82,6 +94,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
         const matchArtist = album.artist.toLowerCase().includes(query);
         const matchTitle = album.title.toLowerCase().includes(query);
         const matchGenre = album.genres?.some((g) => g.toLowerCase().includes(query));
+        const matchStyle = album.styles?.some((s) => s.toLowerCase().includes(query));
         const matchEdition = album.edition?.toLowerCase().includes(query);
         const matchVariant = album.variant?.toLowerCase().includes(query);
         const matchLabel = album.label?.toLowerCase().includes(query);
@@ -92,6 +105,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
           !matchArtist &&
           !matchTitle &&
           !matchGenre &&
+          !matchStyle &&
           !matchEdition &&
           !matchVariant &&
           !matchLabel &&
@@ -128,6 +142,11 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
         return false;
       }
 
+      // Style filter
+      if (selectedStyle && !album.styles?.some((s) => s.toLowerCase() === selectedStyle.toLowerCase())) {
+        return false;
+      }
+
       // Decade filter
       if (selectedDecade) {
         if (!album.releaseYear) return false;
@@ -145,6 +164,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
     ratingFilter,
     selectedFormat,
     selectedGenre,
+    selectedStyle,
     selectedDecade,
     albumStats,
   ]);
@@ -193,6 +213,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   const hasActiveFilters =
     statusFilter !== 'all' ||
     selectedGenre !== null ||
+    selectedStyle !== null ||
     selectedDecade !== null ||
     selectedFormat !== null ||
     specialEditionOnly ||
@@ -201,6 +222,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   const clearAllFilters = () => {
     setStatusFilter('all');
     setSelectedGenre(null);
+    setSelectedStyle(null);
     setSelectedDecade(null);
     setSelectedFormat(null);
     setSpecialEditionOnly(false);
@@ -220,7 +242,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search artist, title, edition, genre..."
+            placeholder="Search artist, title, edition, genre, style..."
             className="w-full pl-9 pr-8 py-2 rounded-2xl bg-white border border-[#D9D4C7] text-xs sm:text-sm text-[#2D2D2A] placeholder:text-[#8B8C7A] focus:border-[#5D614E] focus:outline-hidden transition shadow-xs"
           />
           {searchQuery && (
@@ -441,6 +463,38 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                     }`}
                   >
                     {g}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Styles (if present) */}
+          {availableStyles.length > 0 && (
+            <div>
+              <span className="text-[11px] text-[#726E65] block mb-1.5 font-medium">Style</span>
+              <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                <button
+                  onClick={() => setSelectedStyle(null)}
+                  className={`px-2.5 py-1 rounded-xl text-xs transition ${
+                    selectedStyle === null
+                      ? 'bg-[#5D614E] text-[#FAF8F5] border border-[#4E5240]'
+                      : 'bg-white text-[#555846] border border-[#D9D4C7] hover:bg-[#FAF8F5]'
+                  }`}
+                >
+                  All Styles
+                </button>
+                {availableStyles.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setSelectedStyle(selectedStyle === s ? null : s)}
+                    className={`px-2.5 py-1 rounded-xl text-xs transition ${
+                      selectedStyle === s
+                        ? 'bg-[#5D614E] text-[#FAF8F5] border border-[#4E5240]'
+                        : 'bg-white text-[#555846] border border-[#D9D4C7] hover:bg-[#FAF8F5]'
+                    }`}
+                  >
+                    {s}
                   </button>
                 ))}
               </div>

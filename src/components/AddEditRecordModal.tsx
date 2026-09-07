@@ -23,6 +23,7 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
   const [title, setTitle] = useState(existingAlbum?.title || '');
   const [releaseYear, setReleaseYear] = useState<string>(existingAlbum?.releaseYear?.toString() || '');
   const [genresText, setGenresText] = useState(existingAlbum?.genres?.join(', ') || '');
+  const [stylesText, setStylesText] = useState(existingAlbum?.styles?.join(', ') || '');
   const [format, setFormat] = useState(existingAlbum?.format || '');
   const [edition, setEdition] = useState(existingAlbum?.edition || '');
   const [variant, setVariant] = useState(existingAlbum?.variant || '');
@@ -39,6 +40,15 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
   const [personalRating, setPersonalRating] = useState<number>(existingAlbum?.personalRating || 0);
   const [notes, setNotes] = useState(existingAlbum?.notes || '');
   const [coverImage, setCoverImage] = useState(existingAlbum?.coverImage || '');
+
+  // Phase 6 physical master states
+  const [physicalIdentifier, setPhysicalIdentifier] = useState(existingAlbum?.physicalIdentifier || '');
+  const [identifierType, setIdentifierType] = useState(existingAlbum?.identifierType || '');
+  const [barcode, setBarcode] = useState(existingAlbum?.barcode || '');
+  const [matrixRunout, setMatrixRunout] = useState(existingAlbum?.matrixRunout || '');
+  const [pressingPlant, setPressingPlant] = useState(existingAlbum?.pressingPlant || '');
+  const [vinylWeight, setVinylWeight] = useState(existingAlbum?.vinylWeight || '');
+  const [researchNotes, setResearchNotes] = useState(existingAlbum?.researchNotes || '');
 
   const [showAdvanced, setShowAdvanced] = useState(isEditing);
   const [saving, setSaving] = useState(false);
@@ -89,6 +99,11 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
         .map((s) => s.trim())
         .filter(Boolean);
 
+      const styles = stylesText
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
       const packagingExtras = extrasText
         .split(',')
         .map((s) => s.trim())
@@ -99,6 +114,7 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
         title: title.trim(),
         releaseYear: parsedYear && !isNaN(parsedYear) ? parsedYear : undefined,
         genres: genres.length > 0 ? genres : undefined,
+        styles: styles.length > 0 ? styles : undefined,
         format: format.trim() || undefined,
         edition: edition.trim() || undefined,
         variant: variant.trim() || undefined,
@@ -107,6 +123,13 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
         rpm: rpm.trim() || undefined,
         discCount: parsedDiscCount && !isNaN(parsedDiscCount) ? parsedDiscCount : undefined,
         catalogNumber: catalogNumber.trim() || undefined,
+        physicalIdentifier: physicalIdentifier.trim() || undefined,
+        identifierType: identifierType.trim() || undefined,
+        barcode: barcode.trim() || undefined,
+        matrixRunout: matrixRunout.trim() || undefined,
+        pressingPlant: pressingPlant.trim() || undefined,
+        vinylWeight: vinylWeight.trim() || undefined,
+        researchNotes: researchNotes.trim() || undefined,
         packagingExtras: packagingExtras.length > 0 ? packagingExtras : undefined,
         purchasePrice: parsedPrice && !isNaN(parsedPrice) ? parsedPrice : undefined,
         purchaseDate: purchaseDate.trim() || undefined,
@@ -307,17 +330,32 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-[11px] text-[#726E65] mb-1 font-medium">
-                    Genres (comma separated)
-                  </label>
-                  <input
-                    type="text"
-                    value={genresText}
-                    onChange={(e) => setGenresText(e.target.value)}
-                    placeholder="e.g. Country, Pop, Americana"
-                    className="w-full px-3 py-2 rounded-lg bg-[#FCFAF6] border border-[#D9D4C7] text-xs text-[#2D2D2A] placeholder:text-[#A6A295] focus:border-[#5D614E] focus:outline-hidden"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] text-[#726E65] mb-1 font-medium">
+                      Genres (comma separated)
+                    </label>
+                    <input
+                      type="text"
+                      value={genresText}
+                      onChange={(e) => setGenresText(e.target.value)}
+                      placeholder="e.g. Rock, Pop, Funk/Soul"
+                      className="w-full px-3 py-2 rounded-lg bg-[#FCFAF6] border border-[#D9D4C7] text-xs text-[#2D2D2A] placeholder:text-[#A6A295] focus:border-[#5D614E] focus:outline-hidden"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-[#726E65] mb-1 font-medium">
+                      Styles (comma separated)
+                    </label>
+                    <input
+                      type="text"
+                      value={stylesText}
+                      onChange={(e) => setStylesText(e.target.value)}
+                      placeholder="e.g. Indie Rock, Nu-Disco, Synth-pop"
+                      className="w-full px-3 py-2 rounded-lg bg-[#FCFAF6] border border-[#D9D4C7] text-xs text-[#2D2D2A] placeholder:text-[#A6A295] focus:border-[#5D614E] focus:outline-hidden"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -385,6 +423,113 @@ export const AddEditRecordModal: React.FC<AddEditRecordModalProps> = ({
                     onChange={(e) => setExtrasText(e.target.value)}
                     placeholder="e.g. Poster, Lyric Booklet, Art Print"
                     className="w-full px-3 py-2 rounded-lg bg-[#FCFAF6] border border-[#D9D4C7] text-xs text-[#2D2D2A] placeholder:text-[#A6A295] focus:border-[#5D614E] focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
+              {/* Physical Master & Identifiers */}
+              <div className="p-3.5 rounded-2xl bg-white border border-[#D9D4C7] space-y-3 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono uppercase text-[#726E65] tracking-wider block font-semibold">
+                    Physical Master & Identifiers
+                  </span>
+                  <span className="text-[10px] font-mono text-[#726E65]">Verbatim Physical Record</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] text-[#726E65] mb-1 font-medium">
+                      Physical Identifier (Verbatim)
+                    </label>
+                    <input
+                      type="text"
+                      value={physicalIdentifier}
+                      onChange={(e) => setPhysicalIdentifier(e.target.value)}
+                      placeholder="e.g. 0602458422399, XLI38LP, B242205"
+                      className="w-full px-3 py-2 rounded-lg bg-[#FCFAF6] border border-[#D9D4C7] font-mono text-xs text-[#2D2D2A] placeholder:text-[#A6A295] focus:border-[#5D614E] focus:outline-hidden"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-[#726E65] mb-1 font-medium">
+                      Identifier Type
+                    </label>
+                    <input
+                      type="text"
+                      value={identifierType}
+                      onChange={(e) => setIdentifierType(e.target.value)}
+                      placeholder="e.g. catalog / spine identifier, barcode"
+                      className="w-full px-3 py-2 rounded-lg bg-[#FCFAF6] border border-[#D9D4C7] text-xs text-[#2D2D2A] placeholder:text-[#A6A295] focus:border-[#5D614E] focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] text-[#726E65] mb-1 font-medium">
+                      Barcode (UPC / EAN)
+                    </label>
+                    <input
+                      type="text"
+                      value={barcode}
+                      onChange={(e) => setBarcode(e.target.value)}
+                      placeholder="e.g. 602458422399"
+                      className="w-full px-3 py-2 rounded-lg bg-[#FCFAF6] border border-[#D9D4C7] font-mono text-xs text-[#2D2D2A] placeholder:text-[#A6A295] focus:border-[#5D614E] focus:outline-hidden"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-[#726E65] mb-1 font-medium">
+                      Vinyl Weight / Thickness
+                    </label>
+                    <input
+                      type="text"
+                      value={vinylWeight}
+                      onChange={(e) => setVinylWeight(e.target.value)}
+                      placeholder="e.g. 180g, 140g"
+                      className="w-full px-3 py-2 rounded-lg bg-[#FCFAF6] border border-[#D9D4C7] text-xs text-[#2D2D2A] placeholder:text-[#A6A295] focus:border-[#5D614E] focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] text-[#726E65] mb-1 font-medium">
+                      Pressing Plant / Manufacturer
+                    </label>
+                    <input
+                      type="text"
+                      value={pressingPlant}
+                      onChange={(e) => setPressingPlant(e.target.value)}
+                      placeholder="e.g. GZ Media, RTI, Pallas"
+                      className="w-full px-3 py-2 rounded-lg bg-[#FCFAF6] border border-[#D9D4C7] text-xs text-[#2D2D2A] placeholder:text-[#A6A295] focus:border-[#5D614E] focus:outline-hidden"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-[#726E65] mb-1 font-medium">
+                      Matrix / Runout Grooves
+                    </label>
+                    <input
+                      type="text"
+                      value={matrixRunout}
+                      onChange={(e) => setMatrixRunout(e.target.value)}
+                      placeholder="e.g. 268297E1/A, STERLING"
+                      className="w-full px-3 py-2 rounded-lg bg-[#FCFAF6] border border-[#D9D4C7] font-mono text-xs text-[#2D2D2A] placeholder:text-[#A6A295] focus:border-[#5D614E] focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] text-[#726E65] mb-1 font-medium">
+                    Research Notes & Discrepancies
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={researchNotes}
+                    onChange={(e) => setResearchNotes(e.target.value)}
+                    placeholder="Physical discrepancies, runout etchings, variant confirmations..."
+                    className="w-full px-3 py-2 rounded-lg bg-[#FCFAF6] border border-[#D9D4C7] text-xs text-[#2D2D2A] placeholder:text-[#A6A295] focus:border-[#5D614E] focus:outline-hidden resize-none"
                   />
                 </div>
               </div>

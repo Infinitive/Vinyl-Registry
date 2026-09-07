@@ -189,10 +189,10 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
                 <Layers className="w-4 h-4 text-[#5D614E]" />
               </div>
               <p className="text-2xl font-bold text-[#2D2D2A] font-mono">
-                {collectionOverview.uniqueGenres}
+                {collectionOverview.uniqueGenres} <span className="text-sm font-normal text-[#726E65]">genres</span>
               </p>
               <p className="text-[11px] text-[#726E65]">
-                genres across {collectionOverview.representedDecadesCount} decades
+                {collectionOverview.uniqueStyles} styles across {collectionOverview.representedDecadesCount} decades
               </p>
             </div>
 
@@ -259,6 +259,42 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
                         <div
                           className="h-full bg-[#5D614E] rounded-full transition-all duration-300"
                           style={{ width: `${Math.min(100, Math.max(4, g.percentage))}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Style Distribution */}
+            <div className="p-5 rounded-2xl bg-white border border-[#D9D4C7] space-y-3 shadow-xs">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-mono uppercase tracking-wider text-[#726E65] flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5 text-[#5D614E]" />
+                  <span>Style Distribution</span>
+                </h4>
+                <span className="text-[10px] text-[#726E65] font-mono">
+                  {collectionDemographics.stylesDistribution.length} Distinct Styles
+                </span>
+              </div>
+
+              {collectionDemographics.stylesDistribution.length === 0 ? (
+                <p className="text-xs text-[#726E65] italic">No styles entered in collection.</p>
+              ) : (
+                <div className="space-y-2.5 pt-1">
+                  {collectionDemographics.stylesDistribution.slice(0, 7).map((s) => (
+                    <div key={s.name} className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-[#2D2D2A] font-medium">{s.name}</span>
+                        <span className="font-mono text-[#726E65]">
+                          {s.count} records ({s.percentage}%)
+                        </span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-[#EFECE4] overflow-hidden">
+                        <div
+                          className="h-full bg-[#8B8C7A] rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min(100, Math.max(4, s.percentage))}%` }}
                         />
                       </div>
                     </div>

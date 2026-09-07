@@ -1,8 +1,9 @@
 import { Album, ListenLog, WishlistItem, BackupData } from '../types';
 import { generateSeedAlbums } from '../data/seedCatalogue';
+import { findMatchingResearchRecord, enrichAlbumWithResearch } from '../data/researchMaster';
 
 const DB_NAME = 'vinyl_collection_db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 interface DBMetadata {
   key: string;
@@ -69,18 +70,94 @@ class VinylDatabase {
     const count = await this.getRecordCount('albums');
 
     if (count === 0) {
-      // First run: seed catalogue
+      // First run: seed catalogue with Phase 6.2 research baseline
       const seedAlbums = generateSeedAlbums();
       await this.saveAlbums(seedAlbums);
       await this.setMetadata('seeded_at', new Date().toISOString());
-      await this.setMetadata('schema_version', 1);
+      await this.setMetadata('schema_version', 3);
     } else {
-      // Schema version check & migration safety
+      // Schema version check & non-destructive migration
       const version = (await this.getMetadata('schema_version')) as number | undefined;
-      if (!version) {
-        await this.setMetadata('schema_version', 1);
+      if (!version || version < 2) {
+        await this.migrateToPhase6();
+      }
+      if (!version || version < 3) {
+        await this.migrateToPhase62();
+        await this.setMetadata('schema_version', 3);
       }
     }
+  }
+
+  // Non-destructive Phase 6 Migration: Attaches research baseline to owned records
+  async migrateToPhase6(): Promise<void> {
+    const albums = await this.getAlbums();
+    if (!albums || albums.length === 0) return;
+
+    const db = await this.getDB();
+    const hasMetadata = db.objectStoreNames.contains('metadata');
+    const storeNames = hasMetadata ? ['albums', 'metadata'] : ['albums'];
+
+    return new Promise((resolve, reject) => {
+      try {
+        const tx = db.transaction(storeNames, 'readwrite');
+        const albumStore = tx.objectStore('albums');
+
+        for (const album of albums) {
+          const research = findMatchingResearchRecord(album);
+          if (research) {
+            const enriched = enrichAlbumWithResearch(album, research);
+            albumStore.put(enriched);
+          }
+        }
+
+        if (hasMetadata) {
+          const metaStore = tx.objectStore('metadata');
+          metaStore.put({ key: 'schema_version', value: 2 });
+          metaStore.put({ key: 'phase6_migrated_at', value: new Date().toISOString() });
+        }
+
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  // Non-destructive Phase 6.2 Migration: Applies Genre & Style research baseline
+  async migrateToPhase62(): Promise<void> {
+    const albums = await this.getAlbums();
+    if (!albums || albums.length === 0) return;
+
+    const db = await this.getDB();
+    const hasMetadata = db.objectStoreNames.contains('metadata');
+    const storeNames = hasMetadata ? ['albums', 'metadata'] : ['albums'];
+
+    return new Promise((resolve, reject) => {
+      try {
+        const tx = db.transaction(storeNames, 'readwrite');
+        const albumStore = tx.objectStore('albums');
+
+        for (const album of albums) {
+          const research = findMatchingResearchRecord(album);
+          if (research) {
+            const enriched = enrichAlbumWithResearch(album, research, true);
+            albumStore.put(enriched);
+          }
+        }
+
+        if (hasMetadata) {
+          const metaStore = tx.objectStore('metadata');
+          metaStore.put({ key: 'schema_version', value: 3 });
+          metaStore.put({ key: 'phase62_migrated_at', value: new Date().toISOString() });
+        }
+
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 
   private async getRecordCount(storeName: string): Promise<number> {
@@ -97,23 +174,33 @@ class VinylDatabase {
   // Metadata operations
   async setMetadata(key: string, value: unknown): Promise<void> {
     const db = await this.getDB();
+    if (!db.objectStoreNames.contains('metadata')) return;
     return new Promise((resolve, reject) => {
-      const tx = db.transaction('metadata', 'readwrite');
-      const store = tx.objectStore('metadata');
-      const req = store.put({ key, value });
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
+      try {
+        const tx = db.transaction('metadata', 'readwrite');
+        const store = tx.objectStore('metadata');
+        const req = store.put({ key, value });
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      } catch {
+        resolve();
+      }
     });
   }
 
   async getMetadata(key: string): Promise<unknown | undefined> {
     const db = await this.getDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction('metadata', 'readonly');
-      const store = tx.objectStore('metadata');
-      const req = store.get(key);
-      req.onsuccess = () => resolve(req.result ? (req.result as DBMetadata).value : undefined);
-      req.onerror = () => reject(req.error);
+    if (!db.objectStoreNames.contains('metadata')) return undefined;
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction('metadata', 'readonly');
+        const store = tx.objectStore('metadata');
+        const req = store.get(key);
+        req.onsuccess = () => resolve(req.result ? (req.result as DBMetadata).value : undefined);
+        req.onerror = () => resolve(undefined);
+      } catch {
+        resolve(undefined);
+      }
     });
   }
 
@@ -267,9 +354,9 @@ class VinylDatabase {
     ]);
 
     return {
-      schemaVersion: 1,
+      schemaVersion: 2,
       exportedAt: new Date().toISOString(),
-      appVersion: '1.0.0',
+      appVersion: '2.0.0',
       albums,
       listenLogs,
       wishlist,
@@ -441,11 +528,15 @@ class VinylDatabase {
 
     return new Promise((resolve, reject) => {
       // 2. Transactional replacement where IndexedDB permits
-      const tx = db.transaction(['albums', 'listenLogs', 'wishlist', 'metadata'], 'readwrite');
+      const hasMetadata = db.objectStoreNames.contains('metadata');
+      const stores = hasMetadata
+        ? ['albums', 'listenLogs', 'wishlist', 'metadata']
+        : ['albums', 'listenLogs', 'wishlist'];
+
+      const tx = db.transaction(stores, 'readwrite');
       const albumStore = tx.objectStore('albums');
       const logStore = tx.objectStore('listenLogs');
       const wishlistStore = tx.objectStore('wishlist');
-      const metadataStore = tx.objectStore('metadata');
 
       if (mode === 'replace') {
         albumStore.clear();
@@ -471,9 +562,12 @@ class VinylDatabase {
         wishlistCount++;
       }
 
-      // Update metadata
-      metadataStore.put({ key: 'last_imported_at', value: new Date().toISOString() });
-      metadataStore.put({ key: 'schema_version', value: cleanData.schemaVersion });
+      // Update metadata if store exists
+      if (hasMetadata) {
+        const metadataStore = tx.objectStore('metadata');
+        metadataStore.put({ key: 'last_imported_at', value: new Date().toISOString() });
+        metadataStore.put({ key: 'schema_version', value: cleanData.schemaVersion });
+      }
 
       tx.oncomplete = () => {
         resolve({

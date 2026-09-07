@@ -183,8 +183,36 @@ export const RecordDetailModal: React.FC<RecordDetailModalProps> = ({
                 )}
               </div>
 
+              {/* Classification: Genre & Style */}
+              <div className="mt-3.5 pt-3 border-t border-[#EFECE4] space-y-1.5 text-xs text-left">
+                <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#726E65] w-14 shrink-0">
+                    Genre
+                  </span>
+                  <span className="text-[#2D2D2A] font-medium">
+                    {album.genres && album.genres.length > 0 ? (
+                      album.genres.join(' · ')
+                    ) : (
+                      <span className="text-[#8B8C7A] italic font-normal">Unassigned</span>
+                    )}
+                  </span>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#726E65] w-14 shrink-0">
+                    Style
+                  </span>
+                  <span className="text-[#555846]">
+                    {album.styles && album.styles.length > 0 ? (
+                      album.styles.join(' · ')
+                    ) : (
+                      <span className="text-[#8B8C7A] italic font-normal">Unassigned</span>
+                    )}
+                  </span>
+                </div>
+              </div>
+
               {/* Personal Rating Row with direct half-star control */}
-              <div className="mt-4 pt-3 border-t border-[#EFECE4] flex flex-col sm:flex-row items-center sm:items-center justify-between gap-2">
+              <div className="mt-3 pt-3 border-t border-[#EFECE4] flex flex-col sm:flex-row items-center sm:items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-[#726E65] font-medium">Personal Rating:</span>
                   <RatingStars
@@ -224,7 +252,12 @@ export const RecordDetailModal: React.FC<RecordDetailModalProps> = ({
               </div>
               <div className="p-2.5 rounded-xl bg-[#FCFAF6] border border-[#D9D4C7]">
                 <span className="text-[#726E65] block text-[11px]">Color / Variant</span>
-                <span className="text-[#2D2D2A] font-medium">{album.variant || 'Not specified'}</span>
+                <span className="text-[#2D2D2A] font-medium">
+                  {album.variant || 'Not specified'}
+                  {album.vinylWeight && (
+                    <span className="ml-1 text-[10px] text-[#726E65] font-mono">({album.vinylWeight})</span>
+                  )}
+                </span>
               </div>
               <div className="p-2.5 rounded-xl bg-[#FCFAF6] border border-[#D9D4C7]">
                 <span className="text-[#726E65] block text-[11px]">Record Label</span>
@@ -238,10 +271,39 @@ export const RecordDetailModal: React.FC<RecordDetailModalProps> = ({
                 <span className="text-[#726E65] block text-[11px]">Country</span>
                 <span className="text-[#2D2D2A] font-medium">{album.country || 'Not specified'}</span>
               </div>
+              {album.physicalIdentifier && (
+                <div className="p-2.5 rounded-xl bg-[#FCFAF6] border border-[#D9D4C7] col-span-2 sm:col-span-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#726E65] block text-[11px]">Physical Identifier</span>
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#EAE6DC] text-[#474A3D] font-mono">
+                      {album.identifierType || 'verbatim'}
+                    </span>
+                  </div>
+                  <span className="text-[#2D2D2A] font-mono font-medium block mt-0.5">{album.physicalIdentifier}</span>
+                </div>
+              )}
               {album.catalogNumber && (
                 <div className="p-2.5 rounded-xl bg-[#FCFAF6] border border-[#D9D4C7] col-span-2 sm:col-span-1">
                   <span className="text-[#726E65] block text-[11px]">Catalog #</span>
                   <span className="text-[#2D2D2A] font-mono">{album.catalogNumber}</span>
+                </div>
+              )}
+              {album.barcode && (
+                <div className="p-2.5 rounded-xl bg-[#FCFAF6] border border-[#D9D4C7] col-span-2 sm:col-span-1">
+                  <span className="text-[#726E65] block text-[11px]">Barcode (UPC/EAN)</span>
+                  <span className="text-[#2D2D2A] font-mono">{album.barcode}</span>
+                </div>
+              )}
+              {album.pressingPlant && (
+                <div className="p-2.5 rounded-xl bg-[#FCFAF6] border border-[#D9D4C7] col-span-2 sm:col-span-1">
+                  <span className="text-[#726E65] block text-[11px]">Pressing Plant</span>
+                  <span className="text-[#2D2D2A] font-medium">{album.pressingPlant}</span>
+                </div>
+              )}
+              {album.matrixRunout && (
+                <div className="p-2.5 rounded-xl bg-[#FCFAF6] border border-[#D9D4C7] col-span-2 sm:col-span-3">
+                  <span className="text-[#726E65] block text-[11px]">Matrix / Runout Grooves</span>
+                  <span className="text-[#2D2D2A] font-mono text-[11px] break-all text-[#3F3F3B]">{album.matrixRunout}</span>
                 </div>
               )}
             </div>
@@ -388,12 +450,75 @@ export const RecordDetailModal: React.FC<RecordDetailModalProps> = ({
             )}
           </div>
 
-          {/* SECTION 5: METADATA */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#D9D4C7] space-y-3 shadow-xs">
-            <h3 className="text-xs font-mono uppercase tracking-wider text-[#726E65] flex items-center gap-1.5">
-              <Database className="w-3.5 h-3.5 text-[#5D614E]" />
-              <span>Record Registry Metadata</span>
-            </h3>
+          {/* SECTION 5: RESEARCH & REGISTRY METADATA */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#D9D4C7] space-y-3.5 shadow-xs">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-mono uppercase tracking-wider text-[#726E65] flex items-center gap-1.5">
+                <Database className="w-3.5 h-3.5 text-[#5D614E]" />
+                <span>Research Baseline & Registry Metadata</span>
+              </h3>
+              {album.confidence && (
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-medium border ${
+                    album.confidence.toLowerCase().includes('high')
+                      ? 'bg-[#5D614E]/10 text-[#5D614E] border-[#5D614E]/25'
+                      : album.confidence.toLowerCase().includes('likely')
+                      ? 'bg-[#B08930]/10 text-[#84631B] border-[#B08930]/30'
+                      : 'bg-[#8A5A53]/10 text-[#733F39] border-[#8A5A53]/30'
+                  }`}
+                >
+                  {album.confidence}
+                </span>
+              )}
+            </div>
+
+            {/* Research status banner if discrepancies, physical confirmation, or notes exist */}
+            {(album.researchStatus || album.physicalConfirmation || album.researchNotes || (album.researchConflicts && album.researchConflicts.length > 0)) && (
+              <div className="p-3 rounded-xl bg-[#FAF8F5] border border-[#D9D4C7] text-xs space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  {album.researchStatus && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[#726E65] text-[11px] font-medium">Status:</span>
+                      <span className="font-mono text-[#2D2D2A] font-medium capitalize">
+                        {album.researchStatus}
+                      </span>
+                    </div>
+                  )}
+                  {album.physicalConfirmation && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[#726E65] text-[11px] font-medium">Physical Verification:</span>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase ${
+                          album.physicalConfirmation.includes('required')
+                            ? 'bg-[#B08930]/15 text-[#6D5215] border border-[#B08930]/30 font-medium'
+                            : 'bg-[#EAE6DC] text-[#474A3D]'
+                        }`}
+                      >
+                        {album.physicalConfirmation}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {album.researchNotes && (
+                  <div className="pt-2 border-t border-[#EAE6DC]">
+                    <span className="text-[#726E65] text-[11px] block font-medium">Research Notes & Catalog Provenance:</span>
+                    <p className="text-[#3F3F3B] text-xs leading-relaxed mt-0.5">{album.researchNotes}</p>
+                  </div>
+                )}
+
+                {album.researchConflicts && album.researchConflicts.length > 0 && (
+                  <div className="pt-2 border-t border-[#EAE6DC]">
+                    <span className="text-[#8A5A53] text-[11px] block font-medium">Recorded Discrepancies:</span>
+                    <ul className="list-disc list-inside text-xs text-[#733F39] mt-0.5 space-y-0.5">
+                      {album.researchConflicts.map((c, i) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div className="p-2.5 rounded-xl bg-[#FCFAF6] border border-[#D9D4C7]">
@@ -421,7 +546,7 @@ export const RecordDetailModal: React.FC<RecordDetailModalProps> = ({
 
             <div className="pt-1 flex items-center gap-2 text-[11px] text-[#726E65]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#5D614E]"></span>
-              <span>Stored locally in browser IndexedDB (Private & Offline-ready)</span>
+              <span>Stored locally in browser IndexedDB (Phase 6 Research Master v2.0 baseline)</span>
             </div>
           </div>
         </div>

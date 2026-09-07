@@ -22,6 +22,21 @@ export interface Album {
   notes?: string;
   addedAt: string; // ISO timestamp
   updatedAt: string; // ISO timestamp
+
+  // Phase 6: Research & Physical Master fields
+  physicalIdentifier?: string; // Verbatim user physical identifier
+  identifierType?: string; // e.g. "physical spine identifier", "catalog number", "UPC", etc.
+  barcode?: string; // Normalized UPC / EAN barcode
+  matrixRunout?: string; // Runout groove etchings/stamps
+  pressingPlant?: string; // Pressing plant identification (e.g. "Pallas", "GZ Media")
+  pressingCountry?: string; // Pressing country
+  pressingYear?: number; // Pressing year
+  vinylWeight?: string; // e.g. "140g", "180g"
+  researchStatus?: string; // e.g. "identified", "identified release family", "unresolved physical discrepancy", etc.
+  confidence?: string; // "High / Confirmed", "Likely", "Unresolved"
+  physicalConfirmation?: string; // "required", "not required", "required for exact variant", etc.
+  researchNotes?: string; // Provenance notes and research findings
+  researchConflicts?: string[]; // Specific conflict notes or unresolved queries
 }
 
 export interface ListenLog {

@@ -4,9 +4,12 @@ import path from 'path';
 import {defineConfig} from 'vite';
 import {VitePWA} from 'vite-plugin-pwa';
 
-export default defineConfig(() => {
+export default defineConfig(({ command }) => {
+  const isBuild = command === 'build';
+  const base = isBuild ? '/Vinyl-Registry/' : '/';
+
   return {
-    base: '/Vinyl-Registry/',
+    base,
     plugins: [
       react(),
       tailwindcss(),
@@ -14,30 +17,30 @@ export default defineConfig(() => {
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
         manifest: {
-          id: '/Vinyl-Registry/',
+          id: base,
           name: 'Vinyl Collection Registry',
           short_name: 'VinylReg',
           description: 'Personal vinyl collection registry, discovery, and listening companion',
           theme_color: '#F4F1EA',
           background_color: '#F4F1EA',
           display: 'standalone',
-          start_url: '/Vinyl-Registry/',
-          scope: '/Vinyl-Registry/',
+          start_url: base,
+          scope: base,
           icons: [
             {
-              src: '/Vinyl-Registry/pwa-192x192.png',
+              src: `${base}pwa-192x192.png`,
               sizes: '192x192',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/Vinyl-Registry/pwa-512x512.png',
+              src: `${base}pwa-512x512.png`,
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/Vinyl-Registry/pwa-maskable-512x512.png',
+              src: `${base}pwa-maskable-512x512.png`,
               sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable',
@@ -78,8 +81,7 @@ export default defineConfig(() => {
           ],
         },
         devOptions: {
-          enabled: true,
-          type: 'module',
+          enabled: false,
         },
       }),
     ],

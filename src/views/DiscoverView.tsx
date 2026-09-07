@@ -32,6 +32,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
   const [mode, setMode] = useState<DiscoveryMode>('choose_for_me');
   const [candidates, setCandidates] = useState<DiscoveryCandidate[]>([]);
   const [selectedGenre, setSelectedGenre] = useState<string>('');
+  const [selectedStyle, setSelectedStyle] = useState<string>('');
   const [selectedDecade, setSelectedDecade] = useState<string>('');
 
   // Available genres & decades
@@ -42,6 +43,18 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
     }));
     return Array.from(s).sort();
   }, [albums]);
+
+  const styles = useMemo(() => {
+    const s = new Set<string>();
+    albums.forEach((a) => {
+      if (!selectedGenre || a.genres?.some((g) => g.toLowerCase() === selectedGenre.toLowerCase())) {
+        a.styles?.forEach((st) => {
+          if (st.trim()) s.add(st.trim());
+        });
+      }
+    });
+    return Array.from(s).sort();
+  }, [albums, selectedGenre]);
 
   const decades = useMemo(() => {
     const s = new Set<string>();
@@ -56,14 +69,15 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
   const refreshCandidates = useCallback((targetMode: DiscoveryMode = mode) => {
     const results = runDiscovery(targetMode, albums, listenLogs, {
       genre: selectedGenre || undefined,
+      style: selectedStyle || undefined,
       decade: selectedDecade || undefined,
     });
     setCandidates(results);
-  }, [albums, listenLogs, mode, selectedGenre, selectedDecade]);
+  }, [albums, listenLogs, mode, selectedGenre, selectedStyle, selectedDecade]);
 
   useEffect(() => {
     refreshCandidates(mode);
-  }, [albums, listenLogs, mode, selectedGenre, selectedDecade, refreshCandidates]);
+  }, [albums, listenLogs, mode, selectedGenre, selectedStyle, selectedDecade, refreshCandidates]);
 
   const modesConfig: { id: DiscoveryMode; label: string; icon: React.FC<{ className?: string }>; desc: string }[] = [
     {
@@ -169,45 +183,91 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         </div>
       </div>
 
-      {/* Genre Filter Sub-controls */}
+      {/* Genre & Style Filter Sub-controls */}
       {mode === 'genre' && (
-        <div className="p-4 rounded-2xl bg-white border border-[#D9D4C7] shadow-xs space-y-2 animate-in fade-in duration-150">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-[#2D2D2A]">Select Genre</span>
-            {selectedGenre && (
+        <div className="p-4 rounded-2xl bg-white border border-[#D9D4C7] shadow-xs space-y-3.5 animate-in fade-in duration-150">
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-medium text-[#2D2D2A]">Filter by Genre</span>
+              {(selectedGenre || selectedStyle) && (
+                <button
+                  onClick={() => {
+                    setSelectedGenre('');
+                    setSelectedStyle('');
+                  }}
+                  className="text-[11px] text-[#5D614E] hover:underline"
+                >
+                  Clear all filters
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
               <button
                 onClick={() => setSelectedGenre('')}
-                className="text-[11px] text-[#5D614E] hover:underline"
-              >
-                Clear filter
-              </button>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              onClick={() => setSelectedGenre('')}
-              className={`px-2.5 py-1 rounded-xl text-xs font-medium transition ${
-                selectedGenre === ''
-                  ? 'bg-[#5D614E] text-[#FAF8F5] border border-[#4E5240]'
-                  : 'bg-[#FCFAF6] text-[#555846] border border-[#D9D4C7] hover:bg-[#FAF8F5]'
-              }`}
-            >
-              All Genres
-            </button>
-            {genres.map((g) => (
-              <button
-                key={g}
-                onClick={() => setSelectedGenre(selectedGenre === g ? '' : g)}
                 className={`px-2.5 py-1 rounded-xl text-xs font-medium transition ${
-                  selectedGenre === g
+                  selectedGenre === ''
                     ? 'bg-[#5D614E] text-[#FAF8F5] border border-[#4E5240]'
                     : 'bg-[#FCFAF6] text-[#555846] border border-[#D9D4C7] hover:bg-[#FAF8F5]'
                 }`}
               >
-                {g}
+                All Genres
               </button>
-            ))}
+              {genres.map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setSelectedGenre(selectedGenre === g ? '' : g)}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-medium transition ${
+                    selectedGenre === g
+                      ? 'bg-[#5D614E] text-[#FAF8F5] border border-[#4E5240]'
+                      : 'bg-[#FCFAF6] text-[#555846] border border-[#D9D4C7] hover:bg-[#FAF8F5]'
+                  }`}
+                >
+                  {g}
+                </button>
+              ))}
+            </div>
           </div>
+
+          {styles.length > 0 && (
+            <div className="pt-2 border-t border-[#EFECE4]">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-medium text-[#2D2D2A]">Filter by Style</span>
+                {selectedStyle && (
+                  <button
+                    onClick={() => setSelectedStyle('')}
+                    className="text-[11px] text-[#5D614E] hover:underline"
+                  >
+                    Clear style
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
+                <button
+                  onClick={() => setSelectedStyle('')}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-medium transition ${
+                    selectedStyle === ''
+                      ? 'bg-[#5D614E] text-[#FAF8F5] border border-[#4E5240]'
+                      : 'bg-[#FCFAF6] text-[#555846] border border-[#D9D4C7] hover:bg-[#FAF8F5]'
+                  }`}
+                >
+                  All Styles
+                </button>
+                {styles.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setSelectedStyle(selectedStyle === s ? '' : s)}
+                    className={`px-2.5 py-1 rounded-xl text-xs font-medium transition ${
+                      selectedStyle === s
+                        ? 'bg-[#5D614E] text-[#FAF8F5] border border-[#4E5240]'
+                        : 'bg-[#FCFAF6] text-[#555846] border border-[#D9D4C7] hover:bg-[#FAF8F5]'
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -396,6 +456,22 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                       </span>
                     )}
                   </div>
+
+                  {/* Genre & Style Classification */}
+                  {((album.genres && album.genres.length > 0) || (album.styles && album.styles.length > 0)) && (
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1 text-[11px] pt-0.5">
+                      {album.genres?.map((g) => (
+                        <span key={g} className="px-2 py-0.5 rounded-full bg-[#EAE6DC] text-[#474A3D] font-medium">
+                          {g}
+                        </span>
+                      ))}
+                      {album.styles?.map((s) => (
+                        <span key={s} className="px-2 py-0.5 rounded-full bg-[#FAF8F5] text-[#726E65] border border-[#E0DCD1]">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
                   {album.personalRating !== undefined && album.personalRating > 0 && (
                     <div className="pt-1 flex justify-center sm:justify-start">
